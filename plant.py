@@ -10,7 +10,7 @@ st.title("Plant Growth Prediction App")
 
 # Load the trained logistic regression model
 try:
-    with open('logreg_model.pkl', 'rb') as file:
+    with open('plant.pkl', 'rb') as file:
         logreg = pickle.load(file)
 except FileNotFoundError:
     st.error("Model file 'logreg_model.pkl' not found. Please ensure it is in the same directory.")
@@ -104,4 +104,5 @@ st.write("""
 1. Use the sidebar to enter plant details such as sunlight hours, temperature, and humidity.
 2. Choose the soil type, water frequency, and fertilizer type from the dropdown menus.
 3. Click the 'Predict' button to see whether the plant is likely to grow successfully.
+
 """)
