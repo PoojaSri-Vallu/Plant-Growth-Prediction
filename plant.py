@@ -18,7 +18,7 @@ except FileNotFoundError:
 
 # Define the label encoder for decoding predictions
 label_encoder = LabelEncoder()
-label_encoder.classes_ = np.array(['Yes', 'No'])  # Adjust based on notebook's encoding
+label_encoder.classes_ = np.array(['Yes', 'No'])  # ✅ Adjust based on model training classes
 
 # Sidebar for user inputs
 st.sidebar.header("Enter Plant Details")
@@ -28,7 +28,6 @@ Sunlight_Hours = st.sidebar.slider("Sunlight Hours", min_value=0, max_value=12, 
 Temperature = st.sidebar.slider("Temperature (°C)", min_value=0, max_value=50, value=25)
 Humidity = st.sidebar.slider("Humidity (1-100)", min_value=1, max_value=100, value=50)
 
-
 # Categorical features
 Soil_Type = st.sidebar.selectbox("Soil Type", options=["Clay", "Sandy", "Loamy"])
 Water_Frequency = st.sidebar.selectbox("Water Frequency", options=["Daily", "Weekly", "Bi-Weekly"])
@@ -36,34 +35,30 @@ Fertilizer_Type = st.sidebar.selectbox("Fertilizer Type", options=["organic", "c
 
 
 # Function to preprocess input data
-def preprocess_input(Sunlight_hours, Temperature, Humidity, Soil_Type, Water_Frequency, Fertilizer_Type):
+def preprocess_input(Sunlight_Hours, Temperature, Humidity, Soil_Type, Water_Frequency, Fertilizer_Type):
     # Create a DataFrame with numerical features
     data = {
-        'Sunlight Hours': Sunlight_hours,
+        'Sunlight Hours': Sunlight_Hours,
         'Temperature': Temperature,
         'Humidity': Humidity
     }
     df = pd.DataFrame([data])
 
-
-
-    # Initialize soil_type columns
-    Soil_Type = ['Clay', 'Sandy', 'Loamy']
-    for soil in Soil_Type:
+    # One-hot encode Soil Type
+    soil_types = ["Clay", "Sandy", "Loamy"]
+    for soil in soil_types:
         df[f'Soil_Type_{soil}'] = 1 if Soil_Type == soil else 0
 
-    # Initialize water frequency columns
-    Water_Frequency = ['Daily', 'Weekly', 'Bi-Weekly']
-    for water in Water_Frequency:
+    # One-hot encode Water Frequency
+    water_freqs = ["Daily", "Weekly", "Bi-Weekly"]
+    for water in water_freqs:
         df[f'Water_Frequency_{water}'] = 1 if Water_Frequency == water else 0
 
-    # Initialize fertilizer type columns
-    Fertilizer_Type = ['organic', 'chemical', 'none']
-    for fertilizer in Fertilizer_Type:
-        df[f'Fertilizer_Type_{fertilizer}'] = 1 if Fertilizer_Type == fertilizer else 0
+    # One-hot encode Fertilizer Type
+    fertilizers = ["organic", "chemical", "none"]
+    for fertilizer in fertilizers:
+        df[f'Fertilizer_Type_{fertilizer.capitalize()}'] = 1 if Fertilizer_Type.lower() == fertilizer else 0
 
-    return df
-   
     # Ensure all expected columns are present in the correct order
     expected_columns = [
         'Sunlight Hours', 'Temperature', 'Humidity',
@@ -71,9 +66,10 @@ def preprocess_input(Sunlight_hours, Temperature, Humidity, Soil_Type, Water_Fre
         'Water_Frequency_Daily', 'Water_Frequency_Weekly', 'Water_Frequency_Bi-Weekly',
         'Fertilizer_Type_Organic', 'Fertilizer_Type_Chemical', 'Fertilizer_Type_None'
     ]
-       
+
     df = df.reindex(columns=expected_columns, fill_value=0)
     return df
+
 
 # Button to make prediction
 if st.sidebar.button("Predict"):
@@ -82,16 +78,16 @@ if st.sidebar.button("Predict"):
         Sunlight_Hours, Temperature, Humidity,
         Soil_Type, Water_Frequency, Fertilizer_Type
     )
-    
+
     # Make prediction
     try:
         prediction = logreg.predict(input_df)
         predicted_label = label_encoder.inverse_transform(prediction)[0]
-        
+
         # Display result
         st.subheader("Prediction Result")
         st.write(f"The predicted plant growth is: **{predicted_label}**")
-        if predicted_label == "None":
+        if predicted_label == "No":
             st.write("No plant growth predicted.")
         else:
             st.write(f"The plant may have {predicted_label}.")
@@ -104,6 +100,4 @@ st.write("""
 1. Use the sidebar to enter plant details such as sunlight hours, temperature, and humidity.
 2. Choose the soil type, water frequency, and fertilizer type from the dropdown menus.
 3. Click the 'Predict' button to see whether the plant is likely to grow successfully.
-
 """)
-
